@@ -9,7 +9,8 @@ fn main() {
     let message = MyMessage {
         id: 123,
         name:"hello".to_string(),
-        gender:"boy".to_string()
+        gender:"boy".to_string(),
+        playermessage: "How are you".to_string(),       
     };
     let player = PlayerBasicInfo{
         nickname: "shields".to_string(),
