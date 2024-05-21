@@ -1,8 +1,8 @@
 // Import the necessary trait
 use prost::Message;
 
-// Include the generated Rust code
-include!(concat!(env!("OUT_DIR"), "/example.rs"));
+//this is the output directory specified in the builds.rs
+include!("G:/servers/protos/protos.rs");
 
 fn main() {    
     // Create a new instance of MyMessage
