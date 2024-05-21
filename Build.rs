@@ -1,7 +1,6 @@
 use std::env;
 use std::fs;
-use std::path::{Path, PathBuf};
-
+use std::path::Path;
 fn main() {
     // Set the default output directory if the environment variable is not provided
     let out_dir = match env::var("PROTO_OUTPUT_DIR") {
