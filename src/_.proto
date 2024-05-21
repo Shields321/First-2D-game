@@ -15,4 +15,6 @@ message PlayerBasicInfo {
     uint32 exp = 3;
     uint32 stamina = 4;
     uint32 world_level = 5;
+    MyMessage player_message = 6;
+    repeated MyMessage other_messages = 7;
 }
