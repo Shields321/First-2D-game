@@ -1,4 +1,3 @@
-// Import the necessary trait
 use prost::Message;
 
 //this is the output directory specified in the builds.rs
@@ -12,7 +11,7 @@ fn main() {
         gender:"boy".to_string(),
         playermessage: "How are you".to_string(),       
     };
-    let player = PlayerBasicInfo{
+    let player_info = PlayerBasicInfo{
         nickname: "shields".to_string(),
         level: 90,
         exp: 100000,
@@ -33,18 +32,25 @@ fn main() {
                 playermessage:"Nothing".to_string()
             },
         ]
+    };    
+    let team = Player{
+        id: 600005455,
+        team: vec![
+            Character{
+                id:2013
+            }
+        ]
     };
-    
+
     // Serialize the message to bytes
     let serialized_data = message.encode_to_vec();
-    let data = player.encode_to_vec();
+    let data = player_info.encode_to_vec();
 
     // Deserialize the bytes back into a message
     let deserialized_message = MyMessage::decode(&*serialized_data).unwrap();
     let data_unpacked = PlayerBasicInfo::decode(&*data).unwrap();
 
-    println!("Deserialized Message: {:?}", deserialized_message);
-    //println!("Message: {:?}",data_unpacked);
+    println!("Deserialized Message: {:?}", deserialized_message);    
 
     println!("Deserialized player info\n
         Name:{0}\n
@@ -91,6 +97,6 @@ fn main() {
         )
     }else {
         println!("No other messages found.");
-    }
-    
+    } 
+    println!("{:?}",team)   
 }

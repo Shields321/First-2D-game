@@ -18,3 +18,12 @@ message PlayerBasicInfo {
     MyMessage player_message = 6;
     repeated MyMessage other_messages = 7;
 }
+message Character{
+    uint32 id = 1;    
+}
+message player{
+    uint32 id = 1;
+    repeated Character Team = 2;
+}
+
+
