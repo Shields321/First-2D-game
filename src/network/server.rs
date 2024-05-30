@@ -1,10 +1,10 @@
-use std::{net::SocketAddr};
+use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use tokio_tungstenite::{accept_async, tungstenite::Message};
 use futures_util::{SinkExt, StreamExt};
 
 
-use crate::objects::ball::{player_move};
+use crate::objects::ball::player_move;
 
 
 pub async fn start_server() {
