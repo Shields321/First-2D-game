@@ -1,15 +1,8 @@
-use std::env;
 use std::fs;
 use std::path::Path;
 fn main() {
     // Set the default output directory if the environment variable is not provided
-    let out_dir = match env::var("PROTO_OUTPUT_DIR") {
-        Ok(val) => val,
-        Err(_) => {
-            println!("PROTO_OUTPUT_DIR environment variable not provided, using default.");
-            "G:\\servers\\protos".to_string() // Default output directory
-        }
-    };
+    let out_dir = "G:\\servers\\protos".to_string();
 
     println!("Output directory: {}", out_dir);
 
