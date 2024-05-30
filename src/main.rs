@@ -1,102 +1,80 @@
-use prost::Message;
+use std::thread;
 
-//this is the output directory specified in the builds.rs
-include!("G:/servers/protos/protos.rs");
+use game_engine::{
+    core::Engine,
+    types::{WindowSize, XYPair},
+};
+use objects::{ball::Ball, boxs::Box};
+use network::{client::start_client,server::start_server};
 
-fn main() {    
-    // Create a new instance of MyMessage
-    let message = MyMessage {
-        id: 123,
-        name:"Shields".to_string(),
-        gender:"boy".to_string(),
-        playermessage: "How are you".to_string(),       
+
+mod network;
+mod game_engine;
+mod objects;
+
+fn main() -> Result<(), anyhow::Error> {
+    commands();
+
+    let object_color = ["#8034eb","#FF0000","#FF0000FF"];//purple,red,blue
+    let window_size = WindowSize {
+        width: 800,
+        height: 600,
     };
-    let player_info = PlayerBasicInfo{
-        nickname: "shields".to_string(),
-        level: 90,
-        exp: 100000,
-        stamina: 100,
-        world_level: 7,
-        player_message: Some(message.clone()),
-        other_messages: vec![
-            MyMessage{
-                id: 1,
-                name:"Shields".to_string(),
-                gender:"Boy".to_string(),
-                playermessage:"What are you doing right now".to_string()
-            },
-            MyMessage{
-                id: 2,
-                name:"Bronty".to_string(),
-                gender:"Boy".to_string(),
-                playermessage:"Nothing".to_string()
-            },
-        ]
-    };    
-    let team = Player{
-        id: 600005455,
-        team: vec![
-            Character{
-                id:2013
-            }
-        ]
+    let mut engine = Engine::new(&window_size)?;
+    
+    //create the draw info for the rectangle
+    let width = 150.0;
+    let length = 100.0;
+    let rec_coords = XYPair{
+        x: (&window_size.width/2) as f64 - length/8.0,
+        y: (&window_size.width/2) as f64 - width*2.0,
     };
+    //create the draw info for the second rectangle
+    let width2 = 150.0;
+    let length2 = 100.0;
+    let rec2_coords = XYPair{
+        x: (&window_size.width/2) as f64 - length,
+        y: (&window_size.width/2) as f64 - width/2.0,
+    };
+    //create the draw info for the circle
+    let radius = 24.0;
+    let ball_coords = XYPair {
+        x: (&window_size.width / 2) as f64 - radius,
+        y: (&window_size.height / 2) as f64 - radius,
+    };
+    
+    let ball = Ball::new(ball_coords, radius, object_color[0]);
+    let rec = Box::new(rec_coords,width,length,object_color[1]);
+    let rec2 = Box::new(rec2_coords,width2,length2,object_color[2]);
+    
+    engine.add_game_object(ball);
+    engine.add_game_object(rec);
+    engine.add_game_object(rec2);
+    
+    start_connections();    
 
-    // Serialize the message to bytes
-    let serialized_data = message.encode_to_vec();
-    let data = player_info.encode_to_vec();
+    engine.run("Game Engine")
+    
+}
 
-    // Deserialize the bytes back into a message
-    let deserialized_message = MyMessage::decode(&*serialized_data).unwrap();
-    let data_unpacked = PlayerBasicInfo::decode(&*data).unwrap();
+fn start_connections() {
+    // Start the server and client in separate threads
+    let _server_handle = thread::spawn(|| {
+        let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
+        rt.block_on(async {
+            start_server().await;
+        });
+    });
 
-    println!("Deserialized Message: {:?}", deserialized_message);    
-
-    println!("Deserialized player info\n
-        Name:{0}\n
-        Level:{1}\n
-        Exp:{2}\n
-        Stamina:{3}\n
-        world_level:{4}\n
-        Message:{5}",         
-        data_unpacked.nickname,
-        data_unpacked.level,
-        data_unpacked.exp,
-        data_unpacked.stamina,
-        data_unpacked.world_level,
-        deserialized_message.playermessage,
-    );
-
-    if let Some(first_other_message) = data_unpacked.other_messages.get(0) {        
-        println!(
-            "First Message Details\n\
-            ID: {}\n\
-            Name: {}\n\
-            Gender: {}\n\
-            Player Message: {}",
-            first_other_message.id,
-            first_other_message.name,
-            first_other_message.gender,
-            first_other_message.playermessage,
-        );
-    }else {
-        println!("No other messages found.");
-    }
-
-    if let Some(second_other_message) = data_unpacked.other_messages.get(1)  {        
-        println!(
-            "Second Message\n\
-            ID: {}\n\
-            Name: {}\n\
-            Gender: {}\n\
-            Player Message: {}",
-            second_other_message.id,
-            second_other_message.name,
-            second_other_message.gender,
-            second_other_message.playermessage,
-        )
-    }else {
-        println!("No other messages found.");
-    } 
-    println!("{:?}",team)   
+    let _client_handle = thread::spawn(|| {
+        start_client();
+    });
+}
+fn commands(){
+    print!("if you want to just use text to play the game type in 
+    \n w for jump
+    \n a for left
+    \n d for right
+    \n wa/aw for jump left
+    \n wd/dw for jump right\n");
 }
