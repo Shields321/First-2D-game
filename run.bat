@@ -1,2 +1,2 @@
 @echo off
-start cargo run --bin game
+cargo run --bin game

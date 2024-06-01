@@ -116,28 +116,78 @@ impl Engine {
                 let shape2 = self.objects[j].collision_shape();
     
                 if shape1.check_collision(&shape2, &coords1, &coords2) {
-                    // handle collision by reversing velocities if not one on top of the other
                     let mut vel1 = self.objects[i].common().velocities.clone();
                     let mut vel2 = self.objects[j].common().velocities.clone();
-    
+                    
                     let object1_above_object2 = coords1.y + shape1.height() <= coords2.y;
                     let object2_above_object1 = coords2.y + shape2.height() <= coords1.y;
+                    match (shape1, shape2) {
+                        (CollisionShape::Circle(radius), CollisionShape::Rectangle(width, height)) => {
+                            let circle_bottom = coords1.y + radius;
+                            let circle_top = coords1.y - radius;
+                            let circle_left = coords1.x - radius;
+                            let circle_right = coords1.x + radius;
+                            
+                            let rect_top = coords2.y;
+                            let rect_bottom = coords2.y + width;
+                            let rect_left = coords2.x;
+                            let rect_right = coords2.x + height;
     
-                    if !object1_above_object2 && !object2_above_object1 {
-                        vel1.x = -vel1.x;
-                        vel1.y = -vel1.y;
-                        vel2.x = -vel2.x;
-                        vel2.y = -vel2.y;
+                            // Check if the circle is on top of the rectangle
+                            if circle_bottom >= rect_top && circle_top < rect_top && coords1.x >= rect_left && coords1.x <= rect_right {
+                                // Adjust the circle's position to rest on top of the rectangle
+                                self.objects[i].common().coords.y = rect_top - radius;
+                                // Stop the circle's vertical velocity
+                                vel1.y = 0.0;
+                                vel1.x *= GROUND_DRAG_FACTOR;
+                                // Allow horizontal movement by responding to user input
+                                if self.window.as_ref().unwrap().is_key_down(Key::A) {
+                                    vel1.x = -CIRCLE_MOVE_SPEED;
+                                }
+                                if self.window.as_ref().unwrap().is_key_down(Key::D) {
+                                    vel1.x = CIRCLE_MOVE_SPEED;
+                                }
+                                if self.window.as_ref().unwrap().is_key_down(Key::Space) || self.window.as_ref().unwrap().is_key_down(Key::W) {
+                                    vel1.y = -JUMP_SPEED;
+                                }
+                            } else if circle_top < rect_bottom && circle_bottom > rect_bottom && coords1.x >= rect_left && coords1.x <= rect_right {
+                                // Circle is hitting the bottom of the rectangle
+                                self.objects[i].common().coords.y = rect_bottom + radius;
+                                vel1.y = -vel1.y;
+                            } else if circle_right >= rect_left && circle_left < rect_left && coords1.y >= rect_top && coords1.y <= rect_bottom {
+                                // Circle is hitting the left side of the rectangle
+                                self.objects[i].common().coords.x = rect_left - radius;
+                                vel1.x = -vel1.x;
+                            } else if circle_left <= rect_right && circle_right > rect_right && coords1.y >= rect_top && coords1.y <= rect_bottom {
+                                // Circle is hitting the right side of the rectangle
+                                self.objects[i].common().coords.x = rect_right + radius;
+                                vel1.x = -vel1.x;
+                            }
     
-                        // Update velocities in the objects after the collision check
-                        self.objects[i].common().velocities = vel1.clone();
-                        self.objects[j].common().velocities = vel2.clone();
-                    }                    
+                            // Update velocities in the objects after the collision check
+                            self.objects[i].common().velocities = vel1.clone();
+                            self.objects[j].common().velocities = vel2.clone();
+                        },
+                        _ => {                            
+    
+                            if !object1_above_object2 && !object2_above_object1 {
+                                vel1.x = -vel1.x;
+                                vel1.y = -vel1.y;
+                                vel2.x = -vel2.x;
+                                vel2.y = -vel2.y;
+    
+                                // Update velocities in the objects after the collision check
+                                self.objects[i].common().velocities = vel1.clone();
+                                self.objects[j].common().velocities = vel2.clone();
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-  
+    
+
     fn collision_checks(window_size: &WindowSize, object: &mut Box<dyn GameObject>) {
         match object.collision_shape() {
             CollisionShape::Circle(radius) => {
@@ -318,10 +368,9 @@ impl Engine {
                 
                 // perform collision checks with the window
                 Engine::collision_checks(&self.window_size, object);
-                
+                                
                 // update the game object's info
                 Engine::update_object_info(&self.window_size, object);
-                
                 
                 // allow the object to react to pressed keys
                 object.handle_input(&keys);
@@ -331,7 +380,6 @@ impl Engine {
             }
             self.collision_between();
 
-
             // reflect the display buffer changes
             self.window.as_mut().unwrap().update_with_buffer(
                 &self.buffer,
@@ -339,13 +387,12 @@ impl Engine {
                 self.window_size.height,
             )?;
 
-            // we've done everything we needed to this frame,
-            // so we can sleep until the next frame is needed.
+            
+            //sleep until the next frame is needed.
             std::thread::sleep(
                 std::time::Duration::from_secs_f64(DT).saturating_sub(start_time.elapsed()),
             );
         }
-
         Ok(())
     }
 }

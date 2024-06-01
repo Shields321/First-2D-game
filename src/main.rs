@@ -39,15 +39,15 @@ fn main() -> Result<(), anyhow::Error> {
     //create the draw info for the circle
     let radius = 24.0;
     let ball_coords = XYPair {
-        x: (&window_size.width / 2) as f64 - radius,
-        y: (&window_size.height / 2) as f64 - radius,
+        x: (&window_size.width / 3) as f64 - radius,
+        y: (&window_size.height / 3) as f64 - radius,
     };
     
-    let ball = Ball::new(ball_coords, radius, object_color[0]);
+    let ball = Ball::new(ball_coords, radius, object_color[0]);    
     let rec = Box::new(rec_coords,width,length,object_color[1]);
     let rec2 = Box::new(rec2_coords,width2,length2,object_color[2]);
-    
-    engine.add_game_object(ball);
+
+    engine.add_game_object(ball);    
     engine.add_game_object(rec);
     engine.add_game_object(rec2);
     
