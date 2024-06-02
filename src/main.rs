@@ -1,4 +1,5 @@
 use std::thread;
+use std::fs;
 
 use game_engine::{
     core::Engine,
@@ -6,14 +7,25 @@ use game_engine::{
 };
 use objects::{ball::Ball, boxs::Box};
 use network::{client::start_client,server::start_server};
-
+use music::play_music::play;
 
 mod network;
 mod game_engine;
 mod objects;
+mod music;
+
 
 fn main() -> Result<(), anyhow::Error> {
-    commands();
+                      
+    let songs = display_songs("src/music/songs");
+    if songs.is_empty() {
+        println!("No songs found in the folder.");
+    } else {
+        println!("Songs in the folder.\nchoose one to have no song press enter:");
+        for song in &songs {
+            println!("{}", song);
+        }
+    }
 
     let object_color = ["#8034eb","#FF0000","#FF0000FF"];//purple,red,blue
     let window_size = WindowSize {
@@ -51,9 +63,14 @@ fn main() -> Result<(), anyhow::Error> {
     engine.add_game_object(rec);
     engine.add_game_object(rec2);
     
-    start_connections();    
-
+    
+    let user_choice = user_unput();  
+    let path = "src/music/songs/".to_owned() + &user_choice.to_owned();   
+    play(&path);
+    commands(); 
+    start_connections();
     engine.run("Game Engine")
+    
     
 }
 
@@ -77,4 +94,37 @@ fn commands(){
     \n d for right
     \n wa/aw for jump left
     \n wd/dw for jump right\n");
+}
+fn display_songs(file_path: &str) -> Vec<String> {
+    let mut songs = Vec::new();
+    if let Ok(entries) = fs::read_dir(file_path) {
+        for entry in entries {
+            if let Ok(entry) = entry {
+                let path = entry.path();
+                if path.is_file() {
+                    if let Some(extension) = path.extension() {
+                        if extension == "mp3" {
+                            if let Some(filename) = path.file_name() {
+                                if let Some(filename_str) = filename.to_str() {
+                                    songs.push(filename_str.to_string());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    songs
+}
+fn user_unput() -> String{
+    let mut line = String::new();
+        let _b1 = std::io::stdin().read_line(&mut line).unwrap();
+        if let Some('\n')=line.chars().next_back() {
+            line.pop();
+        }
+        if let Some('\r')=line.chars().next_back() {
+            line.pop();
+        }
+    line
 }

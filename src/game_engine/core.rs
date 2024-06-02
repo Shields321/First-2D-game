@@ -378,6 +378,7 @@ impl Engine {
                 // draw the object on the buffer at it's coords
                 Engine::draw(&mut self.buffer, &self.window_size, object);
             }
+            //allow the object to have collision between them
             self.collision_between();
 
             // reflect the display buffer changes

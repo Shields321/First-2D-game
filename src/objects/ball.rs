@@ -12,7 +12,7 @@ const KB_X_BOOST: f64 = 0.2;
 const KB_Y_BOOST: f64 = 20.0;
 
 lazy_static! {
-    static ref GLOBAL_VAR: Mutex<String> = Mutex::new("Hello, world!".to_string());
+    static ref GLOBAL_VAR: Mutex<String> = Mutex::new("".to_string());
 }
 
 pub struct Ball {

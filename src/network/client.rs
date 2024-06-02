@@ -4,7 +4,7 @@ use tungstenite::protocol::Message;
 pub fn start_client() {
     // Connect to the WebSocket server
     let (mut socket, _) = connect("ws://127.0.0.1:8080").expect("Failed to connect");
-
+    
     loop{// Send a message to the server
         let mut line = String::new();
         let _b1 = std::io::stdin().read_line(&mut line).unwrap();
